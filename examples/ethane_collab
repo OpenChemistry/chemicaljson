@@ -1,0 +1,87 @@
+import json
+import py3Dmol
+from rdkit import Chem
+from rdkit.Chem import AllChem
+
+# Go to https://colab.research.google.com/drive/1kHp3BUC7aPX-ELTDtQx2PPqBljUv3Opg to use
+
+# Load JSON data
+data = """
+{
+  "chemical json": 0,
+  "name": "ethane",
+  "inchi": "1/C2H6/c1-2/h1-2H3",
+  "formula": "C 2 H 6",
+  "atoms": {
+    "elements": {
+      "number": [  1,   6,   1,   1,   6,   1,   1,   1 ]
+    },
+    "coords": {
+      "3d": [  1.185080, -0.003838,  0.987524,
+               0.751621, -0.022441, -0.020839,
+               1.166929,  0.833015, -0.569312,
+               1.115519, -0.932892, -0.514525,
+              -0.751587,  0.022496,  0.020891,
+              -1.166882, -0.833372,  0.568699,
+              -1.115691,  0.932608,  0.515082,
+              -1.184988,  0.004424, -0.987522 ]
+    }
+  },
+  "bonds": {
+    "connections": {
+      "index": [ 0, 1,
+                 1, 2,
+                 1, 3,
+                 1, 4,
+                 4, 5,
+                 4, 6,
+                 4, 7 ]
+    },
+    "order": [ 1, 1, 1, 1, 1, 1, 1 ]
+  },
+  "properties": {
+    "molecular mass": 30.0690,
+    "melting point": -172,
+    "boiling point": -88
+  }
+}
+"""
+molecule_data = json.loads(data)
+
+# Create empty editable molecule object
+mol = Chem.RWMol()
+
+# Add atoms to molecule
+atom_indices = {}
+for i, atomic_num in enumerate(molecule_data["atoms"]["elements"]["number"]):
+    atom = Chem.Atom(atomic_num)
+    idx = mol.AddAtom(atom)
+    atom_indices[i] = idx
+
+# Add bonds to molecule
+for i in range(0, len(molecule_data["bonds"]["connections"]["index"]), 2):
+    start_index = molecule_data["bonds"]["connections"]["index"][i]
+    end_index = molecule_data["bonds"]["connections"]["index"][i+1]
+    order = molecule_data["bonds"]["order"][i // 2]
+    mol.AddBond(atom_indices[start_index], atom_indices[end_index], Chem.BondType.values[order])
+
+# Add 3D coordinates to molecule
+conf = Chem.Conformer(mol.GetNumAtoms())
+for i in range(mol.GetNumAtoms()):
+    x, y, z = molecule_data["atoms"]["coords"]["3d"][i*3:i*3+3]
+    conf.SetAtomPosition(i, (x, y, z))
+mol.AddConformer(conf)
+
+# Compute 2D coordinates for displaying
+AllChem.Compute2DCoords(mol)
+
+# Generate 3D coordinates with RDKit's distance geometry
+AllChem.EmbedMolecule(mol)
+
+# Draw molecule in 3D using py3Dmol
+viewer = py3Dmol.view(width=400, height=400)
+viewer.addModel(Chem.MolToMolBlock(mol), 'mol')
+viewer.setStyle({'stick': {}})
+viewer.setBackgroundColor('0xeeeeee')
+viewer.zoomTo()
+viewer.show()
