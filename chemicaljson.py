@@ -180,6 +180,8 @@ class UnitCell(BaseModel):
     cellVectors: Optional[List[float]] = Field(
         min_items=9, max_items=9, default_factory=lambda: [0.0 for _ in range(9)], description="Optional list of cell vectors (in Angstrom): [ x1, y1, z1, x2, y2, z2, ... ]"
     )
+    hallNumber: Optional[int] = Field(..., gt=0, le=531, description="Hall number, optional but suggested")
+    spaceGroup: Optional[str] = Field(..., description="Space group, optional, but suggested")
 
 
 class Vibrations(BaseModel):
