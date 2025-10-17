@@ -270,8 +270,8 @@
           "default": 0,
           "type": "integer"
         },
-        "spinMultiplicity": {
-          "title": "Spinmultiplicity",
+        "totalSpinMultiplicity": {
+          "title": "Totalspinmultiplicity",
           "description": "Total spin multiplicity of the system (2S+1, e.g., 1, 2, 3, etc.). If omitted, assume to be 1 (singlet)",
           "default": 1,
           "type": "integer"
